@@ -62,7 +62,7 @@ function App() {
 
   return (
     <>
-      <ToastContainer autoClose={3000} theme="dark" />
+      <ToastContainer autoClose={2000} theme="dark" />
       <Searchbar onSubmit={handleSubmit} />
       {imgList.length > 0 && <ImageGallery listOfImages={imgList} />}
       {loading && <Loader />}

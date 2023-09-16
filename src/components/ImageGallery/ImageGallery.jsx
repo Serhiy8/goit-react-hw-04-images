@@ -8,9 +8,7 @@ export const ImageGallery = ({ listOfImages }) => {
   const [showModal, setShowModal] = useState(false);
 
   const handleModal = image => {
-    if (image) {
-      setLargeImageURL(image);
-    }
+    setLargeImageURL(image || null);
     setShowModal(!showModal);
   };
 
