@@ -15,16 +15,14 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = valueFromInput => {
-    setPage(1);
-    setTotalPage(1);
-
     if (!valueFromInput) {
       toast.info('Please enter a valid value');
-      setInputValue('');
-      setImgList([]);
-    } else {
-      setInputValue(valueFromInput);
+      return;
     }
+    setImgList([]);
+    setTotalPage(1);
+    setPage(1);
+    setInputValue(valueFromInput);
   };
 
   useEffect(() => {
@@ -33,20 +31,21 @@ function App() {
         setLoading(true);
         const response = await fetchImagesIPA(inputValue, page);
 
-        if (response.total !== 0) {
-          if (totalPage === 1) {
-            const calculatedTotalPage = Math.ceil(
-              response.totalHits / response.hits.length
-            );
-            setTotalPage(calculatedTotalPage);
-          }
-
-          setImgList(prevImgList =>
-            page === 1 ? response.hits : [...prevImgList, ...response.hits]
-          );
-        } else {
+        if (response.total === 0) {
           toast.info('Nothing found. Please try another search value.');
+          return;
         }
+
+        if (totalPage === 1) {
+          const calculatedTotalPage = Math.ceil(
+            response.totalHits / response.hits.length
+          );
+          setTotalPage(calculatedTotalPage);
+        }
+
+        setImgList(prevImgList =>
+          page === 1 ? response.hits : [...prevImgList, ...response.hits]
+        );
       } catch (error) {
         console.error('Oooopss something went wrong!!!', error);
         toast.error('Something went wrong. Please try again later.');
