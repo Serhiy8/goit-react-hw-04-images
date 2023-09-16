@@ -7,14 +7,11 @@ export const ImageGallery = ({ listOfImages }) => {
   const [largeImageURL, setLargeImageURL] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const openModal = image => {
-    setLargeImageURL(image);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setLargeImageURL(null);
-    setShowModal(false);
+  const handleModal = image => {
+    if (image) {
+      setLargeImageURL(image);
+    }
+    setShowModal(!showModal);
   };
 
   return (
@@ -24,10 +21,10 @@ export const ImageGallery = ({ listOfImages }) => {
           <ImageGaleryItem
             key={id}
             webformatURL={webformatURL}
-            onOpenModal={() => openModal(largeImageURL)}
+            onOpenModal={() => handleModal(largeImageURL)}
           />
         ))}
-        {showModal && <Modal image={largeImageURL} onClose={closeModal} />}
+        {showModal && <Modal image={largeImageURL} onClose={handleModal} />}
       </ul>
     </>
   );
