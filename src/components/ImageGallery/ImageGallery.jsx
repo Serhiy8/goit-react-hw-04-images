@@ -1,39 +1,34 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { ImageGaleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { Modal } from 'components/Modal/Modal';
 import css from './ImageGallery.module.css';
 
-export class ImageGallery extends Component {
-  state = {
-    largeImageURL: null,
-    showModal: false,
+export const ImageGallery = ({ listOfImages }) => {
+  const [largeImageURL, setLargeImageURL] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const openModal = image => {
+    setLargeImageURL(image);
+    setShowModal(true);
   };
 
-  openModal = image => {
-    this.setState({ largeImageURL: image, showModal: true });
+  const closeModal = () => {
+    setLargeImageURL(null);
+    setShowModal(false);
   };
 
-  closeModal = () => {
-    this.setState({ largeImageURL: null, showModal: false });
-  };
-
-  render() {
-    const { listOfImages } = this.props;
-    return (
-      <>
-        <ul className={css.ImageGallery}>
-          {listOfImages.map(({ id, webformatURL, largeImageURL }) => (
-            <ImageGaleryItem
-              key={id}
-              webformatURL={webformatURL}
-              onOpenModal={() => this.openModal(largeImageURL)}
-            />
-          ))}
-          {this.state.showModal && (
-            <Modal image={this.state.largeImageURL} onClose={this.closeModal} />
-          )}
-        </ul>
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <ul className={css.ImageGallery}>
+        {listOfImages.map(({ id, webformatURL, largeImageURL }) => (
+          <ImageGaleryItem
+            key={id}
+            webformatURL={webformatURL}
+            onOpenModal={() => openModal(largeImageURL)}
+          />
+        ))}
+        {showModal && <Modal image={largeImageURL} onClose={closeModal} />}
+      </ul>
+    </>
+  );
+};

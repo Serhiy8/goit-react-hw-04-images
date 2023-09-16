@@ -1,111 +1,84 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { fetchImagesIPA } from './Api/api';
 import { LoadMore } from './LoadMore/LoadMore';
 import { Loader } from './Loader/Loader';
 
-class App extends Component {
-  state = {
-    imgList: [],
-    inputValue: '',
-    page: 1,
-    totalPage: 1,
-    loading: false,
-    errorMessage: '',
+function App() {
+  const [imgList, setImgList] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const loaderToggle = isLoading => {
+    setLoading(isLoading);
   };
 
-  async componentDidUpdate(_, prevState) {
-    if (prevState.inputValue !== this.state.inputValue) {
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  const handleSubmit = valueFromInput => {
+    if (!valueFromInput) {
+      setErrorMessage('Please enter a valid value');
+      setInputValue('');
+      setImgList([]);
+      setPage(1);
+      setTotalPage(1);
+    } else {
+      setInputValue(valueFromInput);
+      setErrorMessage('');
+      setPage(1);
+      setTotalPage(1);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        this.loaderToggle();
-        this.setState({ imgList: [], totalPage: 1, page: 1 }, async () => {
-          const response = await fetchImagesIPA(
-            this.state.inputValue,
-            this.state.page,
-            this.loaderToggle
-          );
-          if (response) {
-            const totalPage = Math.ceil(
+        loaderToggle(true);
+        const response = await fetchImagesIPA(inputValue, page);
+
+        if (response.total !== 0) {
+          if (totalPage === 1) {
+            const calculatedTotalPage = Math.ceil(
               response.totalHits / response.hits.length
             );
-            this.loaderToggle();
-            this.setState({
-              imgList: response.hits,
-              totalPage: totalPage,
-            });
+            setTotalPage(calculatedTotalPage);
           }
-        });
-      } catch (error) {
-        console.log('Oooopss something went wrong!!!');
-        this.loaderToggle();
-      }
-    }
-  }
 
-  loaderToggle = () => {
-    this.setState(({ loading }) => ({
-      loading: !loading,
-    }));
-  };
-
-  handleSubmit = valueFromInput => {
-    if (valueFromInput === '') {
-      this.setState({
-        errorMessage: 'Please enter a valid value',
-        imgList: [],
-        page: 1,
-        totalPage: 1,
-      });
-    } else {
-      this.setState({
-        inputValue: valueFromInput,
-        errorMessage: '',
-      });
-    }
-  };
-
-  handleLoadMore = async () => {
-    try {
-      this.loaderToggle();
-      this.setState(
-        prevState => ({
-          page: (prevState.page += 1),
-        }),
-        async () => {
-          const response = await fetchImagesIPA(
-            this.state.inputValue,
-            this.state.page
+          setImgList(prevImgList =>
+            page === 1 ? response.hits : [...prevImgList, ...response.hits]
           );
-          this.setState(
-            prevState => ({
-              imgList: [...prevState.imgList, ...response.hits],
-            }),
-            () => this.loaderToggle()
-          );
+          setErrorMessage('');
+        } else {
+          setErrorMessage('Nothing found. Please try a different search term.');
         }
-      );
-    } catch (error) {
-      console.log('error');
-      this.loaderToggle();
-    }
-  };
+      } catch (error) {
+        console.error('Oooopss something went wrong!!!', error);
+        setErrorMessage('Something went wrong. Please try again later.');
+      } finally {
+        loaderToggle(false);
+      }
+    };
 
-  render() {
-    const { imgList, inputValue, page, loading, totalPage, errorMessage } =
-      this.state;
-    return (
-      <>
-        <Searchbar onSubmit={this.handleSubmit} />
-        {errorMessage && <div>{errorMessage}</div>}
-        {imgList && inputValue && <ImageGallery listOfImages={imgList} />}
-        {loading && <Loader />}
-        {totalPage > page && inputValue && (
-          <LoadMore onClick={this.handleLoadMore} />
-        )}
-      </>
-    );
-  }
+    if (inputValue) {
+      fetchData();
+    }
+  }, [page, inputValue, totalPage]);
+
+  return (
+    <>
+      <Searchbar onSubmit={handleSubmit} />
+      {errorMessage && <div>{errorMessage}</div>}
+      {imgList.length > 0 && <ImageGallery listOfImages={imgList} />}
+      {loading && <Loader />}
+      {totalPage > page && inputValue && <LoadMore onClick={handleLoadMore} />}
+    </>
+  );
 }
 
 export default App;

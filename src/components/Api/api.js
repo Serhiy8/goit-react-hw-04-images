@@ -3,7 +3,7 @@ import axios from 'axios';
 const PAGE_URL = 'https://pixabay.com/api/';
 const API_KEY = '25385009-fbf12157e432b3e643b87146c';
 
-export const fetchImagesIPA = async (inputValue, page, loader) => {
+export const fetchImagesIPA = async (inputValue, page) => {
   try {
     const response = await axios.get(PAGE_URL, {
       params: {
@@ -22,6 +22,5 @@ export const fetchImagesIPA = async (inputValue, page, loader) => {
     }
   } catch (error) {
     console.error('Error:', error);
-    loader();
   }
 };
